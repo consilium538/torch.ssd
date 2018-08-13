@@ -7,14 +7,21 @@ cfg = {
     'set':'trainval'
 }
 
-classname = (
+vocclasses = (
+        'aeroplane', 'bicycle', 'bird', 'boat',
+        'bottle', 'bus', 'car', 'cat', 'chair',
+        'cow', 'diningtable', 'dog', 'horse',
+        'motorbike', 'person', 'pottedplant',
+        'sheep', 'sofa', 'train', 'tvmonitor'
+        )
 
 basepath = Path(f'./VOCdevkit/VOC{cfg["year"]}')
 setpath = basepath / 'ImageSets' / 'Main' / f'{cfg["set"]}.txt'
 annopath = basepath / 'Annotations'
 dumppath = Path(f'./anno_{cfg["year"]}_{cfg["set"]}.bin')
 
-
+def classlabel(classname):
+    return next(filter(lambda x: x[1] == classname, enumerate(vocclasses)))
 
 def setname(setpath):
     with open(setfile, 'r') as fp:
@@ -26,14 +33,14 @@ def annoparse(annopath):
     filename = lxmltree.xpath('//filename/text()')[0]
     bboxlist = list()
     for i in lxmltree.xpath('//object'):
-        bboxlist.append(
-                    i.xpath('name/text()')[0]
+        bboxlist.append((
+                    classlabel(i.xpath('name/text()')[0])
                     i.xpath('bndbox/xmin/text()')[0]
                     i.xpath('bndbox/ymin/text()')[0]
                     i.xpath('bndbox/xmax/text()')[0]
                     i.xpath('bndbox/ymax/text()')[0]
-                )
-    return
+                ))
+    return (fielname, bboxlist)
 
 def anno_script():
     anno_list = list()
