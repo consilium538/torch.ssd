@@ -2,16 +2,23 @@ import torch
 import torch.nn as nn
 import torchvision
 
-f_map = ((38, 512, 4),
-        (19, 1024, 6),
-        (10, 512, 6),
-        (5, 256, 6)
-        (3, 256, 6)
-        (1, 128, 4))
+# pytorch conv2 format : (N, C, H, W), vgg pretrained color : (R, G, B)
+# normalized with mean = [0.485, 0.456, 0,406], std = [0.299, 0.224, 0.225]
+
+f_map = ((38, 512, 4, (2)),
+        (19, 1024, 6, (2, 3)),
+        (10, 512, 6, (2, 3)),
+        (5, 256, 6, (2, 3)),
+        (3, 256, 4, (2)),
+        (1, 128, 4, (2)))
 num_classes = 21
 
 class SSD(nn.Module):
     def __init__(self):
+        """
+        Single Shot multibox Detector layer
+        in
+        """
         super(SSD,self).__init__()
         self.vgg = torchvision.models.vgg16(pretrained=True).features[:-1]
         for i in vgg.parameters(): #freeze pretrained network
@@ -34,9 +41,10 @@ class SSD(nn.Module):
         ])
 
         self.mbox_loc = nn.ModuleList(
-                [nn.Conv2d(x[0],x[1]*4,kernel_size=3,padding=1) for x in f_map])
+                [nn.Conv2d(x[1],x[2]*4,kernel_size=3,padding=1) for x in f_map])
         self.mbox_conf = nn.ModuleList(
-                [nn.Conv2d(x[0],x[1]*num_classes,kernel_size=3,padding=1) for x in f_map])
+                [nn.Conv2d(x[1],x[2]*num_classes,kernel_size=3,padding=1) for x in f_map])
+        self.default_box = self._defaultbox()
 
     def forward(self, x):
         #input -> vgg -> extra -> class
@@ -50,7 +58,7 @@ class SSD(nn.Module):
             x = self.vgg[i](x)
             if i in (21):
                 feature_list.append(x)
-        
+
         for i in range():
             x = self.extra[i](x)
             if i % 2 == 1:
@@ -66,4 +74,32 @@ class SSD(nn.Module):
         output = (
                 loc.view(loc.size(0),-1,4),
                 conf.view(conv.size(0),-1,num_classes),
+                torch.Tensor(self.default_box).view(-1.4)
         )
+
+        return output
+
+    def _defaultbox(self):
+        """
+        default box dimention
+        output = ( num_defualt, ( cx,cy,w,h ) )
+        """
+
+        #num_default = reduce(lambda x,y:x+y, (x[0]*x[0]*x[2] for x in f_map))
+        box_size = np.linspace(0.2, 0.9, 6) # 가장 큰 defualt box의 s_k`의 경우 scale 계산 어찌?
+        box_prime_size = np.linsapce(0.34, 1.04, 6)
+        box_prime_size = np.sqrt(box_size,box_prime_size)
+        default_box = list()
+        for k, f in enumerate(f_map):
+            for i, j in product(range(f), repeate=2):
+                cx, cy = i+0.5/f , j+0.5/f
+
+                s_k = box_size[k]
+                default_box.append((cx,cy,s_k,s_k))
+
+                s_k_p = box_prime_size[k]
+                default_box.append((cx,cy,s_k_p,s_k_p))
+                for r in f[3]:
+                    default_box.append((cx,cy,s_k*sqrt(r),s_k/sqrt(r)))
+
+        return default_box
