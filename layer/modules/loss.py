@@ -46,6 +46,7 @@ class SSDLoss(nn.Module):
 
         #matching defaultbox
 
+        matching = match(defaultbox, truthbox)
 
         #negative mining
 
