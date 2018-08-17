@@ -54,14 +54,22 @@ def intersection_xyxy(bbox1, bbox2):
     return interlen[:,:,0] * interlen[:,:,1]
 
 def iou(bbox1, bbox2):
-    bbox1_p = c2p(bbox1)
-    bbox2_p = c2p(bbox2)
+    inter = intersection_xyxy(bbox1,bbox2)
+    bbox1_size = (( bbox1[:,2] - bbox1[:,0] ) * ( bbox1[:,3] - bbox1[:,1] ))\
+            .unsqueeze(1).expand_to(inter)
+    bbox2_size = (( bbox2[:,2] - bbox2[:,0] ) * ( bbox2[:,3] - bbox2[:,1] ))\
+            .unsqueeze(0).expand_to(inter)
 
-    bbox1_size = ( bbox1[:,2] - bbox1[:,0] ) * ( bbox1[:,3] - bbox1[:,1] )
-    bbox2_size = ( bbox2[:,2] - bbox2[:,0] ) * ( bbox2[:,3] - bbox2[:,1] )
-
-    inter = intersection_xyxy(bbox1_p,bbox2_p)
     union = bbox1_size + bbox2_size - inter
     return inter / union
 
-def match()
+def match(prior, truth, threshold):
+    """
+    prior box : xywh
+    truth box : xyxy
+    """
+    overlap = iou(
+            c2p( prior ),
+            truth
+            )
+
