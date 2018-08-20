@@ -74,6 +74,81 @@ source.append()
 
 ################################
 
-:
+import torch;import torch.nn as nn;import torch.nn.functional as F
+
+################################
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/mnt/hdd1/workspace/torch/layer/modules/ssd.py", line 71, in forward
+    loc_list.append(j(i).permute(0,2,3,1))
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/conv.py", line 301, in forward
+    self.padding, self.dilation, self.groups)
+RuntimeError: Given groups=1, weight of size [16, 128, 3, 3], expected input[1, 256, 1, 1] to have 128 channels, but got 256 channels instead
+>>>
+
+################################
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/mnt/hdd1/workspace/torch/layer/modules/ssd.py", line 65, in forward
+    x = self.extra[i](x)
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/conv.py", line 301, in forward
+    self.padding, self.dilation, self.groups)
+RuntimeError: Given groups=1, weight of size [1024, 1024, 1, 1], expected input[1, 512, 19, 19] to have 1024 channels, but got 512 channels instead
+
+################################
+
+import torch;import torch.nn as nn;import torch.nn.functional as F
+from layer.modules.ssd import SSD
+a = torch.rand(1,3,300,300)
+b = SSD()
+c = b(a)
+
+################################
+
+"""
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/mnt/hdd1/workspace/torch/.venv/lib/python3.7/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/mnt/hdd1/workspace/torch/layer/modules/ssd.py", line 74, in forward
+    loc = torch.cat([t.view(t.shape[0],-1) for t in loc_list],1)
+  File "/mnt/hdd1/workspace/torch/layer/modules/ssd.py", line 74, in <listcomp>
+    loc = torch.cat([t.view(t.shape[0],-1) for t in loc_list],1)
+RuntimeError: invalid argument 2: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Call .contiguous() before .view(). at /pytorch/aten/src/TH/generic/THTensor.cpp:237
+"""
+
+################################
+
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+
+################################
+
+a = torch.rand(100)
+b = a < 0.5
+c = a.masked_fill(b,0)
+d = c.sort(descending=True)
+
+################################
+
+
+
+################################
+
+
+
+################################
+
+
 
 ################################

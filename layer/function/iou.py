@@ -61,7 +61,7 @@ def iou(bbox1, bbox2):
             .unsqueeze(0).expand_to(inter)
 
     union = bbox1_size + bbox2_size - inter
-    return inter / union
+    return inter / union # dimention : [8732,num_classess * N]
 
 def match(prior, truth, threshold):
     """
@@ -73,3 +73,4 @@ def match(prior, truth, threshold):
             truth
             )
 
+    return overlap > 0.5

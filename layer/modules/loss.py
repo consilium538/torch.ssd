@@ -5,14 +5,14 @@ from itertools import product
 from math import sqrt
 import numpy as np
 
-from ..function import iou_xywh
+from ..function import match
 
-f_map = ((38, 512, 4, (2)),
+f_map = ((38, 512, 4, (2,)),
         (19, 1024, 6, (2, 3)),
         (10, 512, 6, (2, 3)),
         (5, 256, 6, (2, 3)),
-        (3, 256, 4, (2)),
-        (1, 128, 4, (2)))
+        (3, 256, 4, (2,)),
+        (1, 128, 4, (2,)))
 num_classes = 21
 
 class SSDLoss(nn.Module):
@@ -45,11 +45,17 @@ class SSDLoss(nn.Module):
         truthbox = target[:,:-1]
         truthclasses = target[:,-1]
 
-        #matching defaultbox
+        #matching defaultbox : return index{1:positive,-1:negative,0:not both}
 
-        matching = match(defaultbox, truthbox)
+        positive_box = match(defaultbox, truthbox)
 
-        #negative mining
+        #negative mining will done in funtion match
+        #should done in here...
+        # dimention : [8732,num_classes]
+
+        negative_proposal = 1 - positive_box
+        #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
+        negative_proposal = loc
 
         locloss =
         confloss =
