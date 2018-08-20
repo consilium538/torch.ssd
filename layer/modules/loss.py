@@ -37,9 +37,10 @@ class SSDLoss(nn.Module):
         return : loss of ssd
         """
         # seperate scores
-        loc = prediction[0]
-        conf = prediction[1]
-        defaultbox = prediction[2]
+        #loc = prediction[0]
+        #conf = prediction[1]
+        #defaultbox = prediction[2]
+        loc, conf, defaultbox = prediction
 
         truthbox = target[:,:-1]
         truthclasses = target[:,-1]
