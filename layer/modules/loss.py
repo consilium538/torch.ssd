@@ -32,7 +32,7 @@ class SSDLoss(nn.Module):
         conf score shape : ( N, default box num, num_classes )
         default box : ( default box num, (cx,cy,w,h)(all 0~1) )
 
-        target : ( N, [truthbox, class] )
+        target : ( N, num_truthbox, [truthbox, class] )
 
         return : loss of ssd
         """
@@ -42,22 +42,19 @@ class SSDLoss(nn.Module):
         #defaultbox = prediction[2]
         loc, conf, defaultbox = prediction
 
-        truthbox = target[:,:-1]
-        truthclasses = target[:,-1]
-
         #matching defaultbox : return index{1:positive,-1:negative,0:not both}
+        for idx in range(num):
+            truthbox = target[idx][:,:-1]
+            positive_box = match(defaultbox, truthbox[idx])
 
-        positive_box = match(defaultbox, truthbox)
+            #negative mining will done in funtion match
+            #should done in here...
+            # dimention : [8732,num_classes]
 
-        #negative mining will done in funtion match
-        #should done in here...
-        # dimention : [8732,num_classes]
+            negative_proposal = 1 - positive_box
+            #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
 
-        negative_proposal = 1 - positive_box
-        #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
-        negative_proposal = loc
-
-        locloss =
-        confloss =
-
-        return torch.mean(locloss), torch.mean(confloss)
+        #locloss = 0
+        #confloss = 0
+#
+        #return torch.mean(locloss), torch.mean(confloss)

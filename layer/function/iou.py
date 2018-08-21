@@ -61,16 +61,19 @@ def iou(bbox1, bbox2):
             .unsqueeze(0).expand_to(inter)
 
     union = bbox1_size + bbox2_size - inter
-    return inter / union # dimention : [8732,num_classess * N]
+    return inter / union # dimention : [bbox1[0],bbox2[0]]
 
-def match(prior, truth, threshold):
+def match(prior, truthbox, threshold=0.5):
     """
-    prior box : xywh
-    truth box : xyxy
+    prior box : xywh [num_defaultbox, (x,y,w,h)]
+    truth box : xyxy, [num_truthbox, (truthbox, classes)]
     """
-    overlap = iou(
-            c2p( prior ),
-            truth
-            )
+    overlap = iou(c2p( prior ), truthbox[:,0]) #dim:[defb,truthb]
+    neg_mask = overlap < threshold
+    overlap.masked_fill_(neg_mask,0)
+    max_val, max_box = overlap.sort( dim=1, descending=True )
+    not_matched = max_val[:,0] == 0
+    match_classes = truthbox[max_box[:,0],1]
+    return match_classes.masked_fill(not_matched,20) #num_classes
 
-    return overlap > 0.5
+def

@@ -137,7 +137,7 @@ torch.set_default_tensor_type(torch.cuda.FloatTensor)
 a = torch.rand(100)
 b = a < 0.5
 c = a.masked_fill(b,0)
-d = c.sort(descending=True)
+d = c.sort(descending=True) #d : (sorted c, index of c)
 
 ################################
 
