@@ -141,7 +141,15 @@ d = c.sort(descending=True) #d : (sorted c, index of c)
 
 ################################
 
-
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+from layer.modules.ssd import SSD
+from layer.function.iou import match
+a = torch.rand(1,3,300,300)
+b = SSD()
+c = b(a)
+d = torch.tensor((0.5,0.5,1.0,1.0,2.0)).reshape(1,-1)
+e = match(c[2],d)
 
 ################################
 
