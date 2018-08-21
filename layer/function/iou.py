@@ -35,7 +35,7 @@ def p2c(bbox):
     to ( x centor, y centor, width, hight )
     """
     return torch.stack((( bbox[:,0] + bbox[:,2] ) / 2, ( bbox[:,1] + bbox[:,3] ) / 2,
-            ( bbox[:,2] - bbox[:,0] ) / 2, ( bbox[:,3] - bbox[:,1] ) / 2),
+            ( bbox[:,2] - bbox[:,0] ), ( bbox[:,3] - bbox[:,1] )),
             dim=1)
 
 def intersection_xyxy(bbox1, bbox2):
@@ -44,13 +44,13 @@ def intersection_xyxy(bbox1, bbox2):
     """
     A = bbox1.size(0)
     B = bbox2.size(0)
-    xymax = torch.max(
-            bbox1[:,:2].unsqueeze(1).expand(A,B,2),
-            bbox2[:,:2].unsqueeze(0).expand(A,B,2)
-            )
-    xymin = torch.min(
+    xymax = torch.min(
             bbox1[:,2:].unsqueeze(1).expand(A,B,2),
             bbox2[:,2:].unsqueeze(0).expand(A,B,2)
+            )
+    xymin = torch.max(
+            bbox1[:,:2].unsqueeze(1).expand(A,B,2),
+            bbox2[:,:2].unsqueeze(0).expand(A,B,2)
             )
     interlen = torch.clamp(xymax-xymin, min=0)
     return interlen[:,:,0] * interlen[:,:,1]

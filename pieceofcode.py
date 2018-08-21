@@ -153,7 +153,14 @@ e = match(c[2],d)
 
 ################################
 
-
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+from layer.modules.ssd import SSD
+from layer.function.iou import iou,match
+bbox1 = torch.tensor([[0,0,1,1],[0.5,0.5,1,1]])
+bbox2 = torch.tensor([[0,0,0.5,0.5],[0,0,1,1]])
+f = iou(bbox1,bbox2)
+print(f)
 
 ################################
 
