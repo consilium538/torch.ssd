@@ -69,11 +69,13 @@ def match(prior, truthbox, threshold=0.5):
     """
     prior box : xywh [num_defaultbox, (x,y,w,h)]
     truth box : xyxy, [num_truthbox, (truthbox, classes)]
+
+    return : [num_defaultbox, (class id)]
     """
     overlap = iou(c2p( prior ), truthbox[:,:-1]) #dim:[defb,truthb]
     neg_mask = overlap < threshold
     overlap.masked_fill_(neg_mask,0)
-    max_val, max_box = overlap.sort( dim=1, descending=True )
-    not_matched = max_val[:,0] == 0
-    match_classes = truthbox[max_box[:,0],-1]
+    max_val, max_box = overlap.max( dim=1 )
+    not_matched = max_val == 0
+    match_classes = truthbox[max_box,-1]
     return match_classes.masked_fill(not_matched,20) #num_classes

@@ -45,13 +45,13 @@ class SSDLoss(nn.Module):
         #matching defaultbox : return index{1:positive,-1:negative,0:not both}
         for idx in range(num):
             truthbox = target[idx][:,:-1]
-            positive_box = match(defaultbox, truthbox[idx])
+            box_classes = match(defaultbox, truthbox[idx])
 
             #negative mining will done in funtion match
             #should done in here...
             # dimention : [8732,num_classes]
 
-            negative_proposal = 1 - positive_box
+            negative_proposal = positive_box == 20
             #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
 
         #locloss = 0

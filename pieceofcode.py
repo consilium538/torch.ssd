@@ -164,6 +164,13 @@ print(f)
 
 ################################
 
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
+a = torch.cuda.LongTensor(10,1).random_() % 10
+b = torch.cuda.FloatTensor(10,10)
+
+b.zero_()
+b.scatter_(1,a,1.0)
 
 ################################
