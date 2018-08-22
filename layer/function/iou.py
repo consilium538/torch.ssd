@@ -73,9 +73,20 @@ def match(prior, truthbox, threshold=0.5):
     return : [num_defaultbox, (class id)]
     """
     overlap = iou(c2p( prior ), truthbox[:,:-1]) #dim:[defb,truthb]
+
+    # max truthbox count : 15
+
     neg_mask = overlap < threshold
     overlap.masked_fill_(neg_mask,0)
     max_val, max_box = overlap.max( dim=1 )
     not_matched = max_val == 0
     match_classes = truthbox[max_box,-1]
-    return match_classes.masked_fill(not_matched,20) #num_classes
+
+    pos_mask = 1 - neg_mask
+    loc_t = torch.zeros(prior.size)
+    proposal_size = (prior.size(0),truthbox.size(0),4)
+    loc_proposal = prior.unsqueeze(1).expand(*proposal_size) - \
+            truthbox[:,:-1].unsqueeze(0).expand(*proposal_size)
+
+    return match_classes.masked_fill(not_matched,20)\
+            .type('torch.cuda.LongTensor')

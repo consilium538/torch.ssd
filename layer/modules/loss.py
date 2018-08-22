@@ -41,19 +41,31 @@ class SSDLoss(nn.Module):
         #conf = prediction[1]
         #defaultbox = prediction[2]
         loc, conf, defaultbox = prediction
+        match_list = list()
 
         #matching defaultbox : return index{1:positive,-1:negative,0:not both}
         for idx in range(num):
-            truthbox = target[idx][:,:-1]
-            box_classes = match(defaultbox, truthbox[idx])
+            truthbox = target[idx]
+            box_loc, box_classes = match(defaultbox, truthbox)
+            #box_classes.type() == 'torch.cuda.LongTensor'
 
             #negative mining will done in funtion match
             #should done in here...
-            # dimention : [8732,num_classes]
+            # dimension : [8732,num_classes]
+            box_one_hot = torch.cuda.FloatTensor(box_classes.size(0),21)\
+                    .zero_().scatter_(1,box_classes.unsqueeze(1),1.0)
+            match_list.append(box_one_hot)
 
-            negative_proposal = positive_box == 20
-            #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
+        matchbox = torch.stack(match_list) # [N, num_defaultbox,num_classes]
+        #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
 
+        # loc loss : L1smooth of matched boxes
+
+        negative_proposal = box_one_hot == 0.0
+        #_,idx=loc.sort
+        #for i,j in enumerate(idx.chunk()):
+        #  a.masked_fill_(i,j):
+        #
         #locloss = 0
         #confloss = 0
 #

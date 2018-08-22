@@ -148,7 +148,7 @@ from layer.function.iou import match
 a = torch.rand(1,3,300,300)
 b = SSD()
 c = b(a)
-d = torch.tensor((0.5,0.5,1.0,1.0,2.0)).reshape(1,-1)
+d = torch.tensor((0.0,0.0,1.0,1.0,2.0)).reshape(1,-1)
 e = match(c[2],d)
 
 ################################
@@ -174,3 +174,36 @@ b.zero_()
 b.scatter_(1,a,1.0)
 
 ################################
+
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+from layer.modules.ssd import SSD
+from layer.function.iou import match
+a = torch.rand(1,3,300,300)
+b = SSD()
+c = b(a)
+d = torch.tensor((0.0,0.0,1.0,1.0,2.0)).reshape(1,-1)
+e = match(c[2],d)
+f = e.type('torch.cuda.LongTensor').unsqueeze(1)
+g = torch.Tensor(f.size(0),21).zero_().scatter_(1,f,1.0)
+
+################################
+
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+from layer.modules.ssd import SSD
+from layer.function.iou import match, c2p, p2c, iou
+a = torch.rand(1,3,300,300)
+b = SSD()
+c = b(a)
+d = torch.tensor([[0.0,0.0,1.0,1.0,2.0],[0.5,0.5,1.0,1.0,5.0]]).reshape(2,-1) #fake truthbox
+e = iou(c2p(c[2]),d[:,:-1])
+
+################################
+
+
+################################
+
+
+################################
+
