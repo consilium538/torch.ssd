@@ -5,7 +5,7 @@ from itertools import product
 from math import sqrt
 import numpy as np
 
-from ..function import match
+from ..function.iou import match
 
 f_map = ((38, 512, 4, (2,)),
         (19, 1024, 6, (2, 3)),
@@ -20,9 +20,9 @@ class SSDLoss(nn.Module):
     loss of single shot detector
     """
 
-    def __init__(self, ):
+    def __init__(self, negpos_ratio = 3):
         super(SSDLoss, self).__init__()
-        self.negpos_ratio = 3
+        self.negpos_ratio = negpos_ratio
 
     def forward(self, prediction, target):
         """
