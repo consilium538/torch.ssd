@@ -22,6 +22,7 @@ class SSDLoss(nn.Module):
 
     def __init__(self, ):
         super(SSDLoss, self).__init__()
+        self.negpos_ratio = 3
 
     def forward(self, prediction, target):
         """
@@ -42,6 +43,7 @@ class SSDLoss(nn.Module):
         #defaultbox = prediction[2]
         loc, conf, defaultbox = prediction
         match_list = list()
+        loc_list = list()
 
         #matching defaultbox : return index{1:positive,-1:negative,0:not both}
         for idx in range(num):
@@ -55,18 +57,19 @@ class SSDLoss(nn.Module):
             box_one_hot = torch.cuda.FloatTensor(box_classes.size(0),21)\
                     .zero_().scatter_(1,box_classes.unsqueeze(1),1.0)
             match_list.append(box_one_hot)
+            loc_list.append(box_loc)
 
         matchbox = torch.stack(match_list) # [N, num_defaultbox,num_classes]
+        loc_conf = torch.stack(loc_list) # [N, num_defaultbox]
         #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
+
+        num_pos = matchbox[:,:,:-1].long().sum(1)
+        num_neg = torch.clamp(num_pos.sum(1),max=matchbox.size(1)-1)
 
         # loc loss : L1smooth of matched boxes
 
-        negative_proposal = box_one_hot == 0.0
-        #_,idx=loc.sort
-        #for i,j in enumerate(idx.chunk()):
-        #  a.masked_fill_(i,j):
-        #
+        # conf loss : CrossEntropy of POS group and NEG group
+
         #locloss = 0
         #confloss = 0
-#
         #return torch.mean(locloss), torch.mean(confloss)
