@@ -43,11 +43,11 @@ class SSDLoss(nn.Module):
         matchbox = torch.cuda.LongTensor(*conf.shape)
         loc_conf = torch.cuda.FloatTensor(*loc.shape)
 
-        for idx in range(num):
+        for idx in range(loc.shape[0]):
             truthbox = target[idx]
-            box_loc, box_classes = match(defaultbox, truthbox[idx])
+            box_loc, box_classes = match(defaultbox, truthbox)
 
-            matchbox[idx].zero_().scater_(
+            matchbox[idx].zero_().scatter_(
                     1,box_classes.unsqueeze(1),1.0
                     )
             loc_conf[idx] = box_loc

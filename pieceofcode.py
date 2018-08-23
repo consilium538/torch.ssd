@@ -185,8 +185,7 @@ ssd_net = SSD()
 lossf = SSDLoss()
 conf = ssd_net(dummy_img)
 dummy_truth = [torch.tensor((0.0,0.0,1.0,1.0,2.0)).reshape(1,-1),
-     torch.tensor((0.5,0.5,1.0,1.0,3.0),(0.0,0.0,1.0,1.0,2.0)).reshape(2,-1)]
-matched = match(conf[2],dummy_truth)
+     torch.tensor([(0.5,0.5,1.0,1.0,3.0),(0.0,0.0,1.0,1.0,2.0)]).reshape(2,-1)]
 testing = lossf(conf, dummy_truth)
 
 ################################
