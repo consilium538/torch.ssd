@@ -38,33 +38,24 @@ class SSDLoss(nn.Module):
         return : loss of ssd
         """
         # seperate scores
-        #loc = prediction[0]
-        #conf = prediction[1]
-        #defaultbox = prediction[2]
         loc, conf, defaultbox = prediction
-        match_list = list()
-        loc_list = list()
 
-        #matching defaultbox : return index{1:positive,-1:negative,0:not both}
+        matchbox = torch.cuda.LongTensor(*conf.shape)
+        loc_conf = torch.cuda.FloatTensor(*loc.shape)
+
         for idx in range(num):
             truthbox = target[idx]
-            box_loc, box_classes = match(defaultbox, truthbox)
-            #box_classes.type() == 'torch.cuda.LongTensor'
+            box_loc, box_classes = match(defaultbox, truthbox[idx])
 
-            #negative mining will done in funtion match
-            #should done in here...
-            # dimension : [8732,num_classes]
-            box_one_hot = torch.cuda.FloatTensor(box_classes.size(0),21)\
-                    .zero_().scatter_(1,box_classes.unsqueeze(1),1.0)
-            match_list.append(box_one_hot)
-            loc_list.append(box_loc)
+            matchbox[idx].zero_().scater_(
+                    1,box_classes.unsqueeze(1),1.0
+                    )
+            loc_conf[idx] = box_loc
 
-        matchbox = torch.stack(match_list) # [N, num_defaultbox,num_classes]
-        loc_conf = torch.stack(loc_list) # [N, num_defaultbox]
-        #negative_list = [negative_proposal[:,i] for i in range(num_classes)]
+        return matchbox, loc_conf
 
-        num_pos = matchbox[:,:,:-1].long().sum(1)
-        num_neg = torch.clamp(num_pos.sum(1),max=matchbox.size(1)-1)
+        #num_pos = matchbox[:,:,:-1].long().sum(1)
+        #num_neg = torch.clamp(num_pos.sum(1),max=matchbox.size(1)-1)
 
         # loc loss : L1smooth of matched boxes
 
