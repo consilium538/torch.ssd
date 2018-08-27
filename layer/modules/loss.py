@@ -40,27 +40,33 @@ class SSDLoss(nn.Module):
         # seperate scores
         loc, conf, defaultbox = prediction
 
-        matchbox = torch.cuda.LongTensor(*conf.shape)
-        loc_conf = torch.cuda.FloatTensor(*loc.shape)
+        matchbox = torch.cuda.LongTensor(*conf.shape[:-1]) # [N, num_defaultbox]
+        loc_conf = torch.cuda.FloatTensor(*loc.shape) # [N, num_defaultbox, 4]
 
         for idx in range(loc.shape[0]):
             truthbox = target[idx]
             box_loc, box_classes = match(defaultbox, truthbox)
 
-            matchbox[idx].zero_().scatter_(
-                    1,box_classes.unsqueeze(1),1.0
-                    )
+            matchbox[idx] = box_classes
             loc_conf[idx] = box_loc
 
-        return matchbox, loc_conf
+        matchidx = torch.zeros(*conf.shape).scatter_(
+                1,matchbox.unsqueeze(1),1.0
+                ) # [N, num_defaultbox, num_classes]
+        pos = (matchbox != 20)
+        num_pos = pos.sum(dim=1, keepdim=True)
+        num_neg = torch.clamp(num_pos * self.negpos_ratio, max=pos.size(1)-1)
 
-        #num_pos = matchbox[:,:,:-1].long().sum(1)
-        #num_neg = torch.clamp(num_pos.sum(1),max=matchbox.size(1)-1)
+        pos_idx = pos.unsqueeze(2).expand_as(loc)
+        loc_p = loc[pos_idx].view(-1,4)
+        loc_t = loc_conf[pos_idx].view(-1,4)
+        loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
 
-        # loc loss : L1smooth of matched boxes
+        batch_conf = conf.view(-1,num_classes)
+        loss_tmp = lse(batch_conf) - batch_conf.gather(1,matchbox.viwe(-1,1))
+        loss_tmp[pos] = 0
+        _, conf_idx = torch.sort(loss_tmp.view(), desending=True)
+        _, rank_idx = torch.sort(conf_idx)
+        neg = rank_idx < num_neg.expand_as(rank_idx)
 
-        # conf loss : CrossEntropy of POS group and NEG group
-
-        #locloss = 0
-        #confloss = 0
-        #return torch.mean(locloss), torch.mean(confloss)
+        pos_idx = pos.unsqueeze(2).expand_as(conf)
