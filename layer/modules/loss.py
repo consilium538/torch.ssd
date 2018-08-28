@@ -1,11 +1,13 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from functools import reduce
 from itertools import product
 from math import sqrt
 import numpy as np
 
 from ..function.iou import match
+from ..function.lse import lse
 
 f_map = ((38, 512, 4, (2,)),
         (19, 1024, 6, (2, 3)),
@@ -51,7 +53,7 @@ class SSDLoss(nn.Module):
             loc_conf[idx] = box_loc
 
         matchidx = torch.zeros(*conf.shape).scatter_(
-                1,matchbox.unsqueeze(1),1.0
+                2,matchbox.unsqueeze(2),1.0
                 ) # [N, num_defaultbox, num_classes]
         pos = (matchbox != 20)
         num_pos = pos.sum(dim=1, keepdim=True)
@@ -63,10 +65,20 @@ class SSDLoss(nn.Module):
         loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
 
         batch_conf = conf.view(-1,num_classes)
-        loss_tmp = lse(batch_conf) - batch_conf.gather(1,matchbox.viwe(-1,1))
+        loss_tmp = lse(batch_conf) - batch_conf.gather(1,matchbox.view(-1,1))
+        loss_tmp = loss_tmp.view(-1,pos.shape[1])
         loss_tmp[pos] = 0
-        _, conf_idx = torch.sort(loss_tmp.view(), desending=True)
+        _, conf_idx = torch.sort(loss_tmp, descending=True)
         _, rank_idx = torch.sort(conf_idx)
         neg = rank_idx < num_neg.expand_as(rank_idx)
 
         pos_idx = pos.unsqueeze(2).expand_as(conf)
+        neg_idx = neg.unsqueeze(2).expand_as(conf)
+        conf_p = conf[(pos_idx+neg_idx).gt(0)].view(-1,num_classes)
+        target_weighted = matchbox[(pos+neg).gt(0)]
+        loss_c = F.cross_entropy(conf_p, target_weighted, reduction='sum')
+
+        N = num_pos.data.sum()
+        loss_c /= N
+        loss_l /= N
+        return loss_l, loss_c
