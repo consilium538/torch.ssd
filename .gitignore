@@ -1,5 +1,6 @@
 /.venv*
 *.pyc
 *.bin
+*.pkl
 /.ipynb_checkpoints
 /VOCdevkit
