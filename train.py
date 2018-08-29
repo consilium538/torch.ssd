@@ -15,11 +15,12 @@ if os.path.isfile(arg['weightpath']):
     print('Pervious trainded weight loaded')
 
 # dataloader
-dataset = VOCDataset()
+dataset = VOCDataset('./') # imgaug transform 지원 하게 수정
 dataloader = data.DataLoader(dataset, arg['batchsize'])
 batch_iterator = iter(dataloader)
 
 # for i in range(epoch)
+for
 #   for j in dataloader
 #       a = ssd(j)
 #       loss = criterion(a,j)
