@@ -81,4 +81,4 @@ class SSDLoss(nn.Module):
         N = num_pos.data.sum()
         loss_c /= N
         loss_l /= N
-        return loss_l, loss_c
+        return loss_l + loss_c

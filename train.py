@@ -20,7 +20,13 @@ dataloader = data.DataLoader(dataset, arg['batchsize'])
 batch_iterator = iter(dataloader)
 
 # for i in range(epoch)
-for
+for batch in range(arg['startiter'], arg['enditer']):
+    img, label = next(batch_iterator)
+    result = ssd(img)
+    optim.zero_grad()
+    loss = SSDLoss(result, label)
+    loss.backward()
+    optim.step()
 #   for j in dataloader
 #       a = ssd(j)
 #       loss = criterion(a,j)
