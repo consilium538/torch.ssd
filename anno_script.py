@@ -36,10 +36,10 @@ def annoparse(annopath):
     for i in lxmltree.xpath('//object'):
         bboxlist.append((
                     classlabel(i.xpath('name/text()')[0]),
-                    i.xpath('bndbox/xmin/text()')[0],
-                    i.xpath('bndbox/ymin/text()')[0],
-                    i.xpath('bndbox/xmax/text()')[0],
-                    i.xpath('bndbox/ymax/text()')[0]
+                    int(i.xpath('bndbox/xmin/text()')[0]),
+                    int(i.xpath('bndbox/ymin/text()')[0]),
+                    int(i.xpath('bndbox/xmax/text()')[0]),
+                    int(i.xpath('bndbox/ymax/text()')[0])
                 ))
     return (filename, bboxlist)
 
