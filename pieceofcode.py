@@ -202,6 +202,19 @@ e = iou(c2p(c[2]),d[:,:-1])
 
 ################################
 
+import torch;import torch.nn as nn;import torch.nn.functional as F
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+from layer.modules.ssd import SSD
+import imgaug as ia
+import imgaug.augmenters as iaa
+
+net = SSD()
+if os.path.isfile('./testmodel.pkl'):
+    net.load_state_dict(torch.load('./testmodel.pkl'))
+aug = iaa.Scale(300)
+img = cv2.imload('./VOCdevkit/VOC2007/JPEGImages/000005.jpg')[...,::-1]
+img_aug = aug.agument_image(img)
+a = net(img_aug.unsqueeze(0))
 
 ################################
 
