@@ -12,9 +12,10 @@ net = SSD()
 if os.path.isfile(arg['weightpath']):
     net.load_state_dict(torch.load(arg['wegihtpath']))
     print('Pervious trainded weight loaded')
-else:
-    net.vgg
+
 # dataloader
+loader =
+
 # for i in range(epoch)
 #   for j in dataloader
 #       a = ssd(j)
