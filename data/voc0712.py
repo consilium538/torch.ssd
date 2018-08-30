@@ -45,3 +45,7 @@ class VOC2012Dataset(Dataset):
 def VOCDataset(*argv, **argc):
     return VOC2007Dataset(*argv, **argc) +\
         VOC2012Dataset(*argv, **argc)
+
+def detect_collate(batch):
+    return [i[0] for i in batch], \
+            [torch.FloatTensor(i[1]) for i in batch]
