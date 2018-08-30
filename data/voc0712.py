@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data.dataset import Dataset
 import pickle
 import cv2
@@ -15,7 +16,7 @@ class VOC2007Dataset(Dataset):
         elem = self.dataset[idx]
         imgid = elem[0]
         img = cv2.imread(f'{self.root}/VOCdevkit/VOC2007/JPEGImages'+
-                f'/{imgid}')[...,::-1]
+                f'/{imgid}')[...,::-1].copy()
         return (img,elem[1])
 
     def __len__(self):
@@ -35,7 +36,7 @@ class VOC2012Dataset(Dataset):
         elem = self.dataset[idx]
         imgid = elem[0]
         img = cv2.imread(f'{self.root}/VOCdevkit/VOC2012/JPEGImages'+
-                f'/{imgid}')[...,::-1]
+                f'/{imgid}')[...,::-1].copy()
         return (img,elem[1])
 
     def __len__(self):
@@ -47,5 +48,5 @@ def VOCDataset(*argv, **argc):
         VOC2012Dataset(*argv, **argc)
 
 def detect_collate(batch):
-    return [i[0] for i in batch], \
-            [torch.FloatTensor(i[1]) for i in batch]
+    return torch.stack([torch.cuda.FloatTensor(i[0]) for i in batch]), \
+            [torch.cuda.FloatTensor(i[1]) for i in batch]
