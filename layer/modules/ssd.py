@@ -77,7 +77,7 @@ class SSD(nn.Module):
         output = (
                 loc.view(loc.size(0),-1,4),
                 conf.view(conf.size(0),-1,num_classes),
-                torch.Tensor(self.default_box).view(-1,4)
+                torch.cuda.FloatTensor(self.default_box).view(-1,4)
         )
 
         return output

@@ -52,10 +52,11 @@ class SSDLoss(nn.Module):
             matchbox[idx] = box_classes
             loc_conf[idx] = box_loc
 
-        matchidx = torch.zeros(*conf.shape).scatter_(
+        matchidx = torch.zeros(*conf.shape).cuda().scatter_(
                 2,matchbox.unsqueeze(2),1.0
                 ) # [N, num_defaultbox, num_classes]
         pos = (matchbox != 20)
+        #pos = 1 - matchidx[:,:,-1] # [ N, num_defaultbox ]
         num_pos = pos.sum(dim=1, keepdim=True)
         num_neg = torch.clamp(num_pos * self.negpos_ratio, max=pos.size(1)-1)
 
@@ -78,7 +79,7 @@ class SSDLoss(nn.Module):
         target_weighted = matchbox[(pos+neg).gt(0)]
         loss_c = F.cross_entropy(conf_p, target_weighted, reduction='sum')
 
-        N = num_pos.data.sum()
+        N = num_pos.data.sum().float()
         loss_c /= N
         loss_l /= N
-        return loss_l + loss_c
+        return loss_l ,loss_c
